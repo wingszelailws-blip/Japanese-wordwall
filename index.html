@@ -1,7 +1,152 @@
-// =========== 核心數據：Wordwall 連結總表 ===========
-// 你只需要將 wordwall 俾你嘅 https://wordwall.net/tc/embed/... 網址填入引號
-const wordwallData = {
-    // 初級一 (1-12 課)
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>日語自主練習 App</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'sakura': {
+                            100: '#fffaf0', // 極淡米色背景
+                            200: '#fceee9', // 稍深的米粉色
+                            400: '#fb7185', // 櫻花粉強調色 (Rose-400)
+                            500: '#e11d48', // 深粉紅色文字 (Rose-600)
+                        },
+                        'sumi': '#374151' // 墨色文字 (Gray-700)
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* 隱藏各瀏覽器的滾動條，讓介面更乾淨 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* 確保 iframe 容器有彈性滾動 */
+        .iframe-container { -webkit-overflow-scrolling: touch; }
+    </style>
+</head>
+<body class="bg-sakura-100 text-sumi font-sans min-h-screen">
+
+<div id="app" class="max-w-md mx-auto bg-sakura-100 min-h-screen relative shadow-xl overflow-hidden">
+
+    <header class="sticky top-0 z-50 bg-sakura-100/90 backdrop-blur-md border-b border-sakura-200 pt-4 pb-1 px-4">
+        <h1 class="text-center text-lg font-bold tracking-widest mb-3 text-sakura-500">日語自主練習</h1>
+        
+        <nav class="flex space-x-2 overflow-x-auto no-scrollbar py-2">
+            <button 
+                v-for="level in levels" 
+                :key="level.key"
+                @click="selectLevel(level.key)"
+                class="flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap"
+                :class="currentLevelKey === level.key ? 'bg-sakura-400 text-white shadow-md shadow-sakura-400/30' : 'bg-sakura-200 text-sumi hover:bg-sakura-200/80'"
+            >
+                {{ level.name }}
+            </button>
+        </nav>
+    </header>
+
+
+    <main class="p-4 pb-20 overflow-y-auto iframe-container" style="height: calc(100vh - 110px);">
+        
+        <div v-if="!currentLessonNum" class="space-y-3 transition-all duration-500">
+            <p class="text-sm text-sakura-500 ml-2 mb-2 font-medium">{{ currentLevelName }} 選擇課程：</p>
+            <div v-for="i in currentLevelRange" :key="i">
+                <button 
+                    @click="selectLesson(i)"
+                    class="w-full flex items-center justify-between p-4 bg-white rounded-2xl shadow-sm border border-sakura-200 hover:shadow-md hover:border-sakura-400 transition-all group"
+                >
+                    <span class="text-lg font-medium group-hover:text-sakura-500 transition-colors">第 {{ i }} 課</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-sakura-200 group-hover:text-sakura-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+
+        <div v-else-if="!currentExerciseType" class="transition-all duration-500">
+             <button @click="currentLessonNum = null" class="flex items-center text-sakura-500 mb-4 font-medium">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                返回課數列表
+            </button>
+            
+            <h2 class="text-2xl font-bold text-center mb-8 mt-4">第 {{ currentLessonNum }} 課練習</h2>
+            
+            <div class="grid grid-cols-2 gap-4">
+                <button v-for="type in exerciseTypes" :key="type.key" @click="selectExercise(type.key)"
+                    class="flex flex-col items-center justify-center p-6 bg-white rounded-3xl shadow-sm border-2 border-sakura-200 hover:border-sakura-400 hover:bg-sakura-400 hover:text-white transition-all duration-300 aspect-square"
+                >
+                    <span class="text-xl font-bold tracking-wider">{{ type.name }}</span>
+                </button>
+            </div>
+        </div>
+
+
+        <div v-else class="h-full flex flex-col transition-all duration-500">
+             <button @click="currentExerciseType = null" class="flex items-center text-sakura-500 mb-3 font-medium flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                返回選擇練習類型
+            </button>
+
+            <div class="flex-grow bg-white rounded-3xl shadow-lg overflow-hidden border-4 border-sakura-200 relative">
+                 <div v-if="iframeLoading" class="absolute inset-0 flex items-center justify-center bg-sakura-100 z-10">
+                    <span class="text-sakura-400 animate-pulse font-medium tracking-widest">載入練習中...</span>
+                </div>
+                <iframe 
+                    :src="currentWordwallLink" 
+                    @load="iframeLoading = false"
+                    class="w-full h-full" 
+                    frameborder="0" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+        </div>
+
+    </main>
+    
+    <div class="fixed bottom-0 left-0 w-full h-6 bg-gradient-to-t from-sakura-200/50 to-transparent pointer-events-none"></div>
+
+</div><script>
+    const { createApp, ref, computed } = Vue;
+
+    createApp({
+        setup() {
+            // --- 1. 狀態數據 (State) ---
+            const currentLevelKey = ref('p1'); // 預設選擇初級一
+            const currentLessonNum = ref(null); // 當前選擇的課數 (null 代表未選)
+            const currentExerciseType = ref(null); // 當前選擇的練習類型 (null 代表未選)
+            const iframeLoading = ref(true);
+
+            // 級別定義
+            const levels = [
+                { key: 'p1', name: '初級一', start: 1, end: 12 },
+                { key: 'p2', name: '初級二', start: 13, end: 25 },
+                { key: 'a1', name: '進階一', start: 26, end: 38 },
+                { key: 'a2', name: '進階二', start: 39, end: 50 },
+            ];
+
+            // 練習類型定義
+            const exerciseTypes = [
+                { key: 'vocab', name: '單字卡' },
+                { key: 'kanji', name: '漢字' },
+                { key: 'match', name: '配對' },
+                { key: 'grammar', name: '文法' },
+            ];
+
+            // =========== 核心數據：Wordwall 連結總表 ===========
+            // 請在這裡填入你所有的 Wordwall Embed 連結
+            const wordwallData = {
+                 // 初級一 (1-12 課)
     1: { 
         vocab: "https://wordwall.net/tc/embed/1b3bc5c1e50145239baaf1ae8bce94ea?themeId=41&templateId=76&fontStackId=0", 
         kanji: "", // 喺度貼上第一課嘅漢字 Link
@@ -33,3 +178,80 @@ const wordwallData = {
     39: { vocab: "", kanji: "", match: "", grammar: "" },
     50: { vocab: "", kanji: "", match: "", grammar: "" }
 };
+
+
+            // --- 2. 計算屬性 (Computed) ---
+            
+            // 獲取當前級別的詳細資訊物件
+            const currentLevelInfo = computed(() => {
+                return levels.find(l => l.key === currentLevelKey.value);
+            });
+
+            // 獲取當前級別的名稱 (用於顯示)
+            const currentLevelName = computed(() => currentLevelInfo.value.name);
+
+            // 計算當前級別的課數範圍陣列 (例如: [1, 2, ..., 12])
+            const currentLevelRange = computed(() => {
+                const info = currentLevelInfo.value;
+                const range = [];
+                for (let i = info.start; i <= info.end; i++) {
+                    range.push(i);
+                }
+                return range;
+            });
+
+            // 計算當前應該顯示的 Iframe 連結
+            const currentWordwallLink = computed(() => {
+                if (!currentLessonNum.value || !currentExerciseType.value) return '';
+                
+                const lessonLinks = wordwallData[currentLessonNum.value];
+                // 如果該課或該練習類型的連結不存在，回傳空字串或一個預設錯誤頁面
+                if (!lessonLinks || !lessonLinks[currentExerciseType.value]) {
+                    // 這裡可以換成一個你自己的「建置中」Wordwall 頁面
+                    return 'about:blank'; 
+                }
+                return lessonLinks[currentExerciseType.value];
+            });
+
+
+            // --- 3. 方法 (Methods) ---
+            
+            // 選擇級別時，重置課數和練習類型的選擇狀態
+            const selectLevel = (key) => {
+                currentLevelKey.value = key;
+                currentLessonNum.value = null;
+                currentExerciseType.value = null;
+            };
+
+            // 選擇課數時，重置練習類型的選擇狀態
+            const selectLesson = (num) => {
+                currentLessonNum.value = num;
+                currentExerciseType.value = null;
+            };
+
+            // 選擇練習類型，準備載入 Iframe
+            const selectExercise = (type) => {
+                currentExerciseType.value = type;
+                iframeLoading.value = true; // 重置 loading 狀態
+            };
+
+            // 將數據和方法暴露給模板使用
+            return {
+                levels,
+                exerciseTypes,
+                currentLevelKey,
+                currentLessonNum,
+                currentExerciseType,
+                currentLevelName,
+                currentLevelRange,
+                currentWordwallLink,
+                selectLevel,
+                selectLesson,
+                selectExercise,
+                iframeLoading
+            };
+        }
+    }).mount('#app');
+</script>
+</body>
+</html>
