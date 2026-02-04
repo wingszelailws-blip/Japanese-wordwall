@@ -1,47 +1,35 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-    <meta charset="UTF-8">
-    <title>日文學習練習站</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
+// =========== 核心數據：Wordwall 連結總表 ===========
+// 你只需要將 wordwall 俾你嘅 https://wordwall.net/tc/embed/... 網址填入引號
+const wordwallData = {
+    // 初級一 (1-12 課)
+    1: { 
+        vocab: "https://wordwall.net/tc/embed/1b3bc5c1e50145239baaf1ae8bce94ea?themeId=41&templateId=76&fontStackId=0", 
+        kanji: "", // 喺度貼上第一課嘅漢字 Link
+        match: "", 
+        grammar: "" 
+    },
+    2: { vocab: "", kanji: "", match: "", grammar: "" },
+    3: { vocab: "", kanji: "", match: "", grammar: "" },
+    4: { vocab: "", kanji: "", match: "", grammar: "" },
+    5: { vocab: "", kanji: "", match: "", grammar: "" },
+    6: { vocab: "", kanji: "", match: "", grammar: "" },
+    7: { vocab: "", kanji: "", match: "", grammar: "" },
+    8: { vocab: "", kanji: "", match: "", grammar: "" },
+    9: { vocab: "", kanji: "", match: "", grammar: "" },
+    10: { vocab: "", kanji: "", match: "", grammar: "" },
+    11: { vocab: "", kanji: "", match: "", grammar: "" },
+    12: { vocab: "", kanji: "", match: "", grammar: "" },
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="#">日語自主學習</a>
-    <div class="navbar-nav">
-      <a class="nav-link active" href="#">初級一</a>
-      <a class="nav-link" href="#">初級二</a>
-      <a class="nav-link" href="#">進階一</a>
-      <a class="nav-link" href="#">進階二</a>
-    </div>
-  </div>
-</nav>
+    // 初級二 (13-25 課)
+    13: { vocab: "", kanji: "", match: "", grammar: "" },
+    // ... (如此類推，我建議你填好一課就 Commit 一次，費事瀏覽器斷線冇咗進度)
+    25: { vocab: "", kanji: "", match: "", grammar: "" },
 
-<div class="container mt-4">
-  <div class="row">
-    <div class="col-md-3">
-      <ul class="list-group">
-        <li class="list-group-item active">第 1 課</li>
-        <li class="list-group-item">第 2 課</li>
-        </ul>
-    </div>
-    
-    <div class="col-md-9">
-      <div class="btn-group mb-3 w-100">
-        <button class="btn btn-outline-primary">單字卡</button>
-        <button class="btn btn-outline-primary">漢字</button>
-        <button class="btn btn-outline-primary">配對</button>
-        <button class="btn btn-outline-primary">文法</button>
-      </div>
-      
-      <div class="ratio ratio-16x9">
-        <iframe src="https://wordwall.net/embed/xxxxxx" allowfullscreen></iframe>
-      </div>
-    </div>
-  </div>
-</div>
+    // 進階一 (26-38 課)
+    26: { vocab: "", kanji: "", match: "", grammar: "" },
+    38: { vocab: "", kanji: "", match: "", grammar: "" },
 
-</body>
-</html>
+    // 進階二 (39-50 課)
+    39: { vocab: "", kanji: "", match: "", grammar: "" },
+    50: { vocab: "", kanji: "", match: "", grammar: "" }
+};
